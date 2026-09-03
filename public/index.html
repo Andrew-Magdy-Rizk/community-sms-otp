@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="اختبار إرسال OTP عبر Community SMS API" />
+    <title>اختبار إرسال OTP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="card" aria-labelledby="page-title">
+        <div class="brand" aria-hidden="true">C</div>
+        <p class="eyebrow">COMMUNITY SMS API</p>
+        <h1 id="page-title">اختبار إرسال OTP</h1>
+        <p class="intro">اكتب رقم الموبايل لإرسال كود تحقق مكوّن من 6 أرقام.</p>
+
+        <form id="otp-form" novalidate>
+          <label for="phone">رقم الموبايل</label>
+          <div class="phone-field" dir="ltr">
+            <span>EG</span>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputmode="numeric"
+              autocomplete="tel"
+              placeholder="01012345678"
+              maxlength="16"
+              required
+            />
+          </div>
+          <p class="hint">مثال: 01012345678 أو 201012345678</p>
+          <button type="submit" id="submit-button">
+            <span class="button-text">إرسال OTP</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+
+        <div id="result" class="result" role="status" aria-live="polite" hidden></div>
+      </section>
+      <p class="footer">بيانات الحساب محفوظة على الـ server ولا يتم إرسالها للمتصفح.</p>
+    </main>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

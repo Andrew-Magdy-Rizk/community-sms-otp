@@ -2,6 +2,8 @@ import { randomInt, randomUUID } from "node:crypto";
 
 const SEND_SMS_URL =
   "https://app.community-ads.net/SendSMSAPI/api/SMSSender/SendSMSWithDLR";
+const CHECK_CREDIT_URL =
+  "https://app.community-ads.net/SendSMSAPI/api/SMSSender/CheckCredit";
 
 export type SmsCredentials = Readonly<{
   username: string;
@@ -12,6 +14,11 @@ export type SmsCredentials = Readonly<{
 export type SendOtpResult =
   | Readonly<{ ok: true; code: 0; smsId: string; message: string }>
   | Readonly<{ ok: false; code: number; smsId: string; message: string }>;
+
+export type QuotaResult =
+  | Readonly<{ ok: true; unlimited: true; remaining: null }>
+  | Readonly<{ ok: true; unlimited: false; remaining: number }>
+  | Readonly<{ ok: false; code: number; message: string }>;
 
 const statusMessages = {
   0: "تم قبول طلب الرسالة لدى Community. هذا لا يضمن وصولها؛ راجع حالة التسليم مع المزود إذا لم تصل.",
@@ -73,6 +80,56 @@ function maskPhone(phone: string): string {
   return `${phone.slice(0, 5)}****${phone.slice(-3)}`;
 }
 
+export async function checkQuota(
+  credentials: SmsCredentials,
+): Promise<QuotaResult> {
+  const quotaUrl = new URL(CHECK_CREDIT_URL);
+  quotaUrl.searchParams.set("userName", credentials.username);
+  quotaUrl.searchParams.set("password", credentials.password);
+
+  let response: Response;
+  try {
+    response = await fetch(quotaUrl, {
+      method: "POST",
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (error: unknown) {
+    console.error("[Community SMS] Quota request failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+
+  const responseBody = await response.text();
+  const code = parseProviderCode(responseBody);
+  console.info("[Community SMS] Quota response", {
+    httpStatus: response.status,
+    httpStatusText: response.statusText,
+    providerCode: code,
+    responseBody,
+  });
+
+  if (!response.ok || code === null) {
+    return {
+      ok: false,
+      code: response.ok ? -100 : response.status,
+      message: response.ok
+        ? "Community returned an invalid quota response."
+        : `Community quota request failed over HTTP (${response.status}).`,
+    };
+  }
+
+  if (code < 0) {
+    return { ok: false, code, message: describeStatus(code) };
+  }
+
+  if (code === 0) {
+    return { ok: true, unlimited: true, remaining: null };
+  }
+
+  return { ok: true, unlimited: false, remaining: code };
+}
+
 export async function sendOtp(
   receiver: string,
   credentials: SmsCredentials,
@@ -83,7 +140,7 @@ export async function sendOtp(
   const payload = {
     UserName: credentials.username,
     Password: credentials.password,
-    SMSText: `Your verification code is ${otp}. Do not share it with anyone.`,
+    SMSText: `Your verification is ${otp}. Do not share it with anyone.`,
     SMSLang: "E",
     SMSSender: credentials.sender,
     SMSReceiver: receiver,

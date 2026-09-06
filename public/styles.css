@@ -56,6 +56,32 @@ body {
 
 h1 { margin: 0; font-size: clamp(27px, 6vw, 36px); letter-spacing: -0.04em; }
 .intro { margin: 12px 0 30px; color: #637069; line-height: 1.75; }
+.quota {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 28px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #edf6f0;
+  box-shadow: inset 0 0 0 1px #c8dfcf;
+}
+.quota-label { margin: 0 0 4px; color: #527060; font-size: 12px; font-weight: 700; }
+.quota-value { display: block; color: #164c38; font-size: 21px; font-variant-numeric: tabular-nums; }
+.quota-value.error { color: #8b2929; font-size: 14px; line-height: 1.45; }
+.quota-refresh {
+  width: auto;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #b8d2c0;
+  border-radius: 10px;
+  color: #195b43;
+  background: #fff;
+  font-size: 13px;
+}
+.quota-refresh:hover { background: #f6fbf7; }
+.quota-refresh:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #75b999; outline-offset: 2px; }
 label { display: block; margin-bottom: 9px; font-weight: 700; }
 
 .phone-field {
@@ -125,6 +151,7 @@ button.loading .spinner { display: block; }
 
 @media (max-width: 520px) {
   .card { padding: 30px 22px; border-radius: 22px; }
+  .quota { margin-bottom: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -3,6 +3,44 @@ const phoneInput = document.querySelector("#phone");
 const button = document.querySelector("#submit-button");
 const buttonText = button.querySelector(".button-text");
 const result = document.querySelector("#result");
+const quotaValue = document.querySelector("#quota-value");
+const refreshQuotaButton = document.querySelector("#refresh-quota");
+let quotaRequestInFlight = false;
+
+function showQuota(data) {
+  quotaValue.classList.remove("error");
+
+  if (!data.ok) {
+    quotaValue.classList.add("error");
+    quotaValue.textContent = data.message || "تعذر قراءة الرصيد.";
+    return;
+  }
+
+  quotaValue.textContent = data.unlimited
+    ? "غير محدود"
+    : `${new Intl.NumberFormat("ar-EG").format(data.remaining)} رسالة`;
+}
+
+async function refreshQuota() {
+  if (quotaRequestInFlight) return;
+
+  quotaRequestInFlight = true;
+  refreshQuotaButton.disabled = true;
+  quotaValue.classList.remove("error");
+  quotaValue.textContent = "جارٍ التحديث…";
+
+  try {
+    const response = await fetch("/api/quota", { cache: "no-store" });
+    const data = await response.json();
+    showQuota(data);
+  } catch {
+    quotaValue.classList.add("error");
+    quotaValue.textContent = "تعذر قراءة الرصيد. حاول مرة أخرى.";
+  } finally {
+    quotaRequestInFlight = false;
+    refreshQuotaButton.disabled = false;
+  }
+}
 
 function showResult(kind, message, smsId) {
   result.hidden = false;
@@ -31,6 +69,7 @@ form.addEventListener("submit", async (event) => {
     });
     const data = await response.json();
     showResult(data.ok ? "success" : "error", data.message, data.smsId);
+    refreshQuota();
   } catch {
     showResult(
       "error",
@@ -42,3 +81,7 @@ form.addEventListener("submit", async (event) => {
     buttonText.textContent = "إرسال OTP";
   }
 });
+
+refreshQuotaButton.addEventListener("click", refreshQuota);
+refreshQuota();
+window.setInterval(refreshQuota, 60_000);

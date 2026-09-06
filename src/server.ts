@@ -3,6 +3,7 @@ import express, { type Request, type Response } from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  checkQuota,
   normalizeEgyptianPhone,
   sendOtp,
   type SmsCredentials
@@ -67,6 +68,30 @@ app.get("/api/dlr", (request: Request, response: Response): void => {
     receivedAt: new Date().toISOString(),
   });
   response.status(200).send("OK");
+});
+
+app.get("/api/quota", async (_request: Request, response: Response): Promise<void> => {
+  response.set("Cache-Control", "no-store");
+  const credentials = getCredentials();
+  if (!credentials) {
+    response.status(500).json({
+      ok: false,
+      message: "Community SMS credentials are not configured.",
+    });
+    return;
+  }
+
+  try {
+    const result = await checkQuota(credentials);
+    response.status(result.ok ? 200 : 502).json(result);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Community SMS quota request failed:", message);
+    response.status(502).json({
+      ok: false,
+      message: "Unable to check the Community SMS quota.",
+    });
+  }
 });
 
 app.post("/api/send-otp", async (request: Request, response: Response): Promise<void> => {

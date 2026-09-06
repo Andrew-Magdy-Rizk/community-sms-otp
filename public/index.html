@@ -15,6 +15,16 @@
         <h1 id="page-title">اختبار إرسال OTP</h1>
         <p class="intro">اكتب رقم الموبايل لإرسال كود تحقق مكوّن من 6 أرقام.</p>
 
+        <section class="quota" aria-labelledby="quota-label">
+          <div>
+            <p id="quota-label" class="quota-label">الرصيد المتبقي</p>
+            <strong id="quota-value" class="quota-value" aria-live="polite">جارٍ التحقق…</strong>
+          </div>
+          <button type="button" id="refresh-quota" class="quota-refresh" aria-label="تحديث الرصيد">
+            تحديث
+          </button>
+        </section>
+
         <form id="otp-form" novalidate>
           <label for="phone">رقم الموبايل</label>
           <div class="phone-field" dir="ltr">

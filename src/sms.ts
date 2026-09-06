@@ -83,7 +83,7 @@ export async function sendOtp(
   const payload = {
     UserName: credentials.username,
     Password: credentials.password,
-    SMSText: `Your verification code is ${otp}. Do not share it with anyone.`,
+    SMSText: `${otp}.`,
     SMSLang: "E",
     SMSSender: credentials.sender,
     SMSReceiver: receiver,
